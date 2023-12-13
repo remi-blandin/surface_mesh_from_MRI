@@ -8,6 +8,12 @@
 #include <CGAL/Gray_level_image_3.h>
 #include <CGAL/Implicit_surface_3.h>
 
+// CGAL for mesh simplification
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/Surface_mesh_simplification/edge_collapse.h>
+#include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Count_ratio_stop_predicate.h>
+
 // VTK includes
 #include <vtkNew.h>
 #include <vtkNIFTIImageReader.h>
@@ -30,6 +36,12 @@ typedef CGAL::Complex_2_in_triangulation_3<Tr> C2t3;
 typedef Tr::Geom_traits GT;
 typedef CGAL::Gray_level_image_3<GT::FT, GT::Point_3> Gray_level_image;
 typedef CGAL::Implicit_surface_3<GT, Gray_level_image> Surface_3;
+
+typedef CGAL::Simple_cartesian<double>               Kernel;
+typedef Kernel::Point_3                              Point_3;
+typedef CGAL::Surface_mesh<Point_3>                  Surface_mesh;
+
+namespace SMS = CGAL::Surface_mesh_simplification;
 
 int main(int argc, char *argv[]) {
 
@@ -90,6 +102,9 @@ int main(int argc, char *argv[]) {
     double center_y = QInputDialog::getDouble(nullptr, "Center Y", "Enter y coordinate of the center (mm)", double(image.ydim()) / 2., -1000., 1000., 1, &ok);
     
     double center_z = QInputDialog::getDouble(nullptr, "Center Z", "Enter z coordinate of the center (mm)", double(image.zdim()) / 2., -1000., 1000., 1, &ok);
+    
+    double stop_ratio = QInputDialog::getDouble(nullptr, "Percentage simplification", "Enter the percentage of edges to remove", 10., 0., 100., 1, &ok);
+    stop_ratio /= 100.;
 
 
   //*********************************************
@@ -130,9 +145,42 @@ int main(int argc, char *argv[]) {
 
     // meshing surface, with the "manifold without boundary" algorithm
     CGAL::make_surface_mesh(c2t3, surface, criteria, CGAL::Manifold_tag());
+    
+  //*********************************************
+  // Export generated mesh
+  //*********************************************
+  
     std::ofstream out("out.off");
     CGAL::output_surface_facets_to_off (out, c2t3);
     std::cout << "Final number of points: " << tr.number_of_vertices() << "\n";
+    
+  //*********************************************
+  // Simplify mesh
+  //*********************************************
+  
+    SMS::Count_ratio_stop_predicate<Surface_mesh> stop(stop_ratio);
+  
+    Surface_mesh surface_mesh;
+    const std::string filename = (argc > 1) ? argv[1] : CGAL::data_file_path("out.off");
+    std::ifstream is(filename);
+    if(!is || !(is >> surface_mesh))
+    {
+      std::cerr << "Failed to read input mesh: " << filename << std::endl;
+      return EXIT_FAILURE;
+    }
+    if(!CGAL::is_triangle_mesh(surface_mesh))
+    {
+      std::cerr << "Input geometry is not triangulated." << std::endl;
+      return EXIT_FAILURE;
+    }
+
+    
+    int r = SMS::edge_collapse(surface_mesh, stop);
+  
+    std::cout << "\nFinished!\n" << r << " edges removed.\n" << surface_mesh.number_of_edges() << " final edges.\n";
+    
+    CGAL::IO::write_polygon_mesh((argc > 3) ? argv[3] : "out_simp.off", surface_mesh, CGAL::parameters::stream_precision(17));
+  
   }
   else
   {
