@@ -14,6 +14,11 @@
 #include <CGAL/Surface_mesh_simplification/edge_collapse.h>
 #include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Count_ratio_stop_predicate.h>
 
+// CGAL for mesh smoothing
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Polygon_mesh_processing/smooth_shape.h>
+#include <CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h>
+
 // VTK includes
 #include <vtkNew.h>
 #include <vtkNIFTIImageReader.h>
@@ -26,6 +31,10 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
+
+// STL includes
+#include <iostream>
+#include <fstream>
 
 // default triangulation for Surface_mesher
 typedef CGAL::Surface_mesh_default_triangulation_3 Tr;
@@ -41,7 +50,12 @@ typedef CGAL::Simple_cartesian<double>               Kernel;
 typedef Kernel::Point_3                              Point_3;
 typedef CGAL::Surface_mesh<Point_3>                  Surface_mesh;
 
+// Typedef for mesh smoothing
+typedef CGAL::Exact_predicates_inexact_constructions_kernel   K;
+typedef CGAL::Surface_mesh<K::Point_3>                        Mesh;
+
 namespace SMS = CGAL::Surface_mesh_simplification;
+namespace PMP = CGAL::Polygon_mesh_processing;
 
 int main(int argc, char *argv[]) {
 
@@ -77,17 +91,6 @@ int main(int argc, char *argv[]) {
   << " ty: " << image.ty()
   << " tz: " << image.tz() << std::endl;
   
-//  // print the values of the image
-//  for (int i(0); i < image.xdim(); i++)
-//  {
-//    for (int j(0); j < image.ydim(); j++)
-//    {
-//      for (int k(0); k < image.zdim(); k++)
-//      {
-//        std::cout << image.value(i, j, k) << std::endl;
-//      }
-//    }
-//  }
 
   //*********************************************
   // Request meshing parameters
@@ -155,13 +158,45 @@ int main(int argc, char *argv[]) {
     std::cout << "Final number of points: " << tr.number_of_vertices() << "\n";
     
   //*********************************************
+  // Smooth mesh
+  //*********************************************
+  
+    const std::string filename_smooth = (argc > 1) ? argv[1] : CGAL::data_file_path("out.off");
+
+    Mesh mesh;
+    if(!PMP::IO::read_polygon_mesh(filename_smooth, mesh))
+    {
+      std::cerr << "Invalid input." << std::endl;
+      return 1;
+    }
+    
+    const unsigned int nb_iterations = (argc > 2) ? std::atoi(argv[2]) : 6;
+    const double time = (argc > 3) ? std::atof(argv[3]) : 0.05;
+  
+    std::set<Mesh::Vertex_index> constrained_vertices;
+    for(Mesh::Vertex_index v : vertices(mesh))
+    {
+      if(is_border(v, mesh))
+        constrained_vertices.insert(v);
+    }
+    
+    std::cout << "Constraining: " << constrained_vertices.size() << " border vertices" << std::endl;
+    CGAL::Boolean_property_map<std::set<Mesh::Vertex_index> > vcmap(constrained_vertices);
+    
+    std::cout << "Smoothing shape... (" << nb_iterations << " iterations)" << std::endl;
+    PMP::smooth_shape(mesh, time, PMP::parameters::number_of_iterations(nb_iterations)
+                                                  .vertex_is_constrained_map(vcmap));
+    CGAL::IO::write_polygon_mesh("out_smoothed.off", mesh, CGAL::parameters::stream_precision(17));
+    std::cout << "Done!" << std::endl;
+    
+  //*********************************************
   // Simplify mesh
   //*********************************************
   
     SMS::Count_ratio_stop_predicate<Surface_mesh> stop(stop_ratio);
   
     Surface_mesh surface_mesh;
-    const std::string filename = (argc > 1) ? argv[1] : CGAL::data_file_path("out.off");
+    const std::string filename = (argc > 1) ? argv[1] : CGAL::data_file_path("out_smoothed.off");
     std::ifstream is(filename);
     if(!is || !(is >> surface_mesh))
     {
