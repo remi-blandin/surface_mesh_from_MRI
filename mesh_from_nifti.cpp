@@ -258,27 +258,13 @@ int main(int argc, char *argv[]) {
     //*********************************************
     
       SMS::Count_ratio_stop_predicate<Surface_mesh> stop(stop_ratio);
-    
-      Surface_mesh surface_mesh;
-      const std::string filename = (argc > 1) ? argv[1] : CGAL::data_file_path("out_smoothed.off");
-      std::ifstream is(filename);
-      if(!is || !(is >> surface_mesh))
-      {
-        std::cerr << "Failed to read input mesh: " << filename << std::endl;
-        return EXIT_FAILURE;
-      }
-      if(!CGAL::is_triangle_mesh(surface_mesh))
-      {
-        std::cerr << "Input geometry is not triangulated." << std::endl;
-        return EXIT_FAILURE;
-      }
-
       
-      int r = SMS::edge_collapse(surface_mesh, stop);
+      int r = SMS::edge_collapse(mesh, stop);
     
-      std::cout << "\nFinished!\n" << r << " edges removed.\n" << surface_mesh.number_of_edges() << " final edges.\n";
+      std::cout << "\nFinished!\n" << r << " edges removed.\n" << mesh.number_of_edges() << " final edges.\n";
       
-      CGAL::IO::write_polygon_mesh((argc > 3) ? argv[3] : "out_simp.off", surface_mesh, CGAL::parameters::stream_precision(17));
+      CGAL::IO::write_polygon_mesh((argc > 3) ? argv[3] : "out_simp.off", mesh, CGAL::parameters::stream_precision(17));
+      CGAL::IO::write_STL((argc > 3) ? argv[3] : "out_simp.stl", mesh, CGAL::parameters::stream_precision(17));
     }
   
   }
