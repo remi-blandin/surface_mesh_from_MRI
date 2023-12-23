@@ -35,6 +35,7 @@
 // STL includes
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 
 // default triangulation for Surface_mesher
 typedef CGAL::Surface_mesh_default_triangulation_3 Tr;
@@ -61,21 +62,23 @@ int main(int argc, char *argv[]) {
 
   QApplication app(argc, argv);
 
-
+  std::string directory_stl_files("/STL_files/");
+  std::filesystem::path stl_file_path;
+  std::string extension;
 
   //*********************************************
   // Load the mesh extraction parameter file
   //*********************************************
   
   // create the file dialog
-  QString fileName = QFileDialog::getOpenFileName(nullptr, "Open File", "./images", "All Files (*.*)");
+  QString fileName = QFileDialog::getOpenFileName(nullptr, "Open File", "/home/remi/Bureau/PromiseAI/mri_data/test_cgal_mesh_generation/images/", "All Files (*.*)");
   
   std::ifstream inputFile(fileName.toStdString());
   std::string line, item;
   char separator(';');
   int cnt;
   double coord[3];
-  std::vector<std::string> fileNameList;
+  std::vector<std::filesystem::path> filePathList;
   std::vector<Point_3> sphereCenterList;
   
   if (!inputFile.is_open())
@@ -97,7 +100,7 @@ int main(int argc, char *argv[]) {
         {
           if (cnt == 0)
           {
-            fileNameList.push_back(item);
+            filePathList.push_back(item);
             cnt ++;
           }
           else
@@ -115,14 +118,6 @@ int main(int argc, char *argv[]) {
           }
         }
       }
-    }
-    for (auto fi : fileNameList)
-    {
-      std::cout << fi << endl;
-    }
-    for (auto pt : sphereCenterList)
-    {
-      std::cout << pt << endl;
     }
   }
   
@@ -145,44 +140,35 @@ int main(int argc, char *argv[]) {
   
   if (ok){
   
-    for (int img(0); img < fileNameList.size(); img ++)
+    for (int img(0); img < filePathList.size(); img ++)
     {
       
       //*********************************************
       // Load Nifti file
       //*********************************************
       
-      std::cout << "Processing file:\n" << fileNameList[img] << std::endl;
+      std::cout << "\n**********************************************************" << endl;
+      std::cout << "Processing file " << img + 1 << "/" << filePathList.size() << " :\n" 
+      << filePathList[img] << std::endl;
       
       // load NifTi image with VTK
       vtkNew<vtkNIFTIImageReader> reader;
-      reader->SetFileName(fileNameList[img].c_str()); 
-    //  reader->SetFileName("images/tense-a-envelop2.nii.gz"); // tense-a-envelop
+      reader->SetFileName(filePathList[img].c_str()); 
       reader->Update();
       auto vtk_image = reader->GetOutput();
       Gray_level_image image(CGAL::IO::read_vtk_image_data(vtk_image), 2.9f);
+      std::cout << "\nImage successfully imported" << endl;
       
       // print the dimensions of the image
       std::cout << "xdim: " << image.xdim() 
       << " ydim: " << image.ydim()
       << " zdim: " << image.zdim() << std::endl;
-      
-        // print the dimensions of the image
-      std::cout << "vx: " << image.vx() 
-      << " vy: " << image.vy()
-      << " vz: " << image.vz() << std::endl;
-      
-          // print the dimensions of the image
-      std::cout << "tx: " << image.tx() 
-      << " ty: " << image.ty()
-      << " tz: " << image.tz() << std::endl;
-      
 
       //*********************************************
       // Create surface mesh
       //*********************************************
     
-      std::cout << "Mesh will be generated with maximal dimension " << max_dim 
+      std::cout << "\nMesh will be generated with maximal dimension " << max_dim 
         << " mm" << std::endl; 
 
       Tr tr;            // 3D-Delaunay triangulation
@@ -219,7 +205,7 @@ int main(int argc, char *argv[]) {
     
       std::ofstream out("out.off");
       CGAL::output_surface_facets_to_off (out, c2t3);
-      std::cout << "Final number of points: " << tr.number_of_vertices() << "\n";
+      std::cout << "Final number of points: " << tr.number_of_vertices() << endl;
       
     //*********************************************
     // Smooth mesh
@@ -244,14 +230,14 @@ int main(int argc, char *argv[]) {
           constrained_vertices.insert(v);
       }
       
-      std::cout << "Constraining: " << constrained_vertices.size() << " border vertices" << std::endl;
+      std::cout << "\nMesh will be smoothed with " << nb_iterations << " iterations of time step "
+      << time << endl;
+      std::cout << "Mesh contains: " << constrained_vertices.size() << " border vertices" << std::endl;
       CGAL::Boolean_property_map<std::set<Mesh::Vertex_index> > vcmap(constrained_vertices);
       
-      std::cout << "Smoothing shape... (" << nb_iterations << " iterations)" << std::endl;
       PMP::smooth_shape(mesh, time, PMP::parameters::number_of_iterations(nb_iterations)
                                                     .vertex_is_constrained_map(vcmap));
-      CGAL::IO::write_polygon_mesh("out_smoothed.off", mesh, CGAL::parameters::stream_precision(17));
-      std::cout << "Done!" << std::endl;
+      std::cout << "Smoothing successful" << std::endl;
       
     //*********************************************
     // Simplify mesh
@@ -259,12 +245,44 @@ int main(int argc, char *argv[]) {
     
       SMS::Count_ratio_stop_predicate<Surface_mesh> stop(stop_ratio);
       
+      std::cout << "\nMesh will be simplified keeping " << 100. * stop_ratio << "% of the edges" << endl;
+      
       int r = SMS::edge_collapse(mesh, stop);
     
-      std::cout << "\nFinished!\n" << r << " edges removed.\n" << mesh.number_of_edges() << " final edges.\n";
+      std::cout << "Mesh simplification successful:" << r << " edges removed, " << mesh.number_of_edges() << " final edges." << endl;
       
       CGAL::IO::write_polygon_mesh((argc > 3) ? argv[3] : "out_simp.off", mesh, CGAL::parameters::stream_precision(17));
-      CGAL::IO::write_STL((argc > 3) ? argv[3] : "out_simp.stl", mesh, CGAL::parameters::stream_precision(17));
+
+      // check if the STL files directory exists and create it if not
+      stl_file_path = filePathList[img].parent_path().string() + directory_stl_files;
+      if (!std::filesystem::is_directory(stl_file_path)) 
+      {
+        std::filesystem::create_directory(stl_file_path);
+      }
+      
+      // check if the file have already been processed before
+      cnt = 0;
+      for (int f(0); f < img; f++)
+      {
+        if (filePathList[f] == filePathList[img]) {cnt ++;}
+      }
+      
+      // Add the filename with the correct extension
+      stl_file_path = stl_file_path.string() + filePathList[img].filename().string();
+      stl_file_path.replace_extension();
+      stl_file_path.replace_extension();
+      if (cnt > 0)
+      {
+        extension = "_" + std::to_string(cnt) + ".stl";
+      }
+      else
+      {
+        extension = ".stl";
+      }
+      stl_file_path = stl_file_path.string() + extension;
+      
+      // Export mesh in STL format
+      CGAL::IO::write_STL(stl_file_path.string(), mesh, CGAL::parameters::stream_precision(17));
     }
   
   }
