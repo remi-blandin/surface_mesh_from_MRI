@@ -114,10 +114,11 @@ int main(int argc, char *argv[]) {
               std::cout << ia.what() << endl;
             }
             
-            sphereCenterList.push_back(Point_3(coord[0], coord[1], coord[2]));
+
           }
         }
       }
+      sphereCenterList.push_back(Point_3(coord[0], coord[1], coord[2]));
     }
   }
   
@@ -183,11 +184,11 @@ int main(int argc, char *argv[]) {
         sphereCenterList[img].z());
 
       double radius_mm = 260.;
-
+      
       GT::FT bounding_sphere_squared_radius = radius_mm * radius_mm;
       GT::Sphere_3 bounding_sphere(bounding_sphere_center,
                                        bounding_sphere_squared_radius);
-
+                                   
       // definition of the surface, with 10^-5 as relative precision
       Surface_3 surface(image, bounding_sphere, 1e-5);
 
