@@ -240,6 +240,8 @@ int main(int argc, char *argv[]) {
                                                     .vertex_is_constrained_map(vcmap));
       std::cout << "Smoothing successful" << std::endl;
       
+      CGAL::IO::write_polygon_mesh((argc > 3) ? argv[3] : "out_smooth.off", mesh, CGAL::parameters::stream_precision(17));
+      
     //*********************************************
     // Simplify mesh
     //*********************************************

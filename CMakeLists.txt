@@ -39,10 +39,15 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 find_package(CGAL REQUIRED COMPONENTS ImageIO)
 
+# include for local package
+find_package(Eigen3 3.2.0) #(requires 3.2.0 or greater)
+include(CGAL_Eigen3_support)
+
 add_executable(mesh_from_nifti MACOSX_BUNDLE mesh_from_nifti.cpp)
 # create_single_source_cgal_program("mesh_from_nifti.cpp")
 target_link_libraries(mesh_from_nifti 
 	PRIVATE ${VTK_LIBRARIES}
 	Qt5::Widgets
 	CGAL::CGAL
+	CGAL::Eigen3_support
 	)
