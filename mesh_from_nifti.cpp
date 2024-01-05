@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
   //*********************************************
   
   // create the file dialog
-  QString fileName = QFileDialog::getOpenFileName(nullptr, "Open File", "/home/remi/Bureau/PromiseAI/mri_data/test_cgal_mesh_generation/images/", "All Files (*.*)");
+  QString fileName = QFileDialog::getOpenFileName(nullptr, "Open File", "/home/remi/Bureau/PromiseAI/mri_data/mesh_generated_with_CGAL/", "All Files (*.*)");
   
   std::ifstream inputFile(fileName.toStdString());
   std::string line, item;
