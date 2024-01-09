@@ -135,6 +135,8 @@ int main(int argc, char *argv[]) {
 //      double center_y = QInputDialog::getDouble(nullptr, "Center Y", "Enter y coordinate of the center (mm)", double(image.ydim()) / 2., -1000., 1000., 1, &ok);
 //      
 //      double center_z = QInputDialog::getDouble(nullptr, "Center Z", "Enter z coordinate of the center (mm)", double(image.zdim()) / 2., -1000., 1000., 1, &ok);
+
+	unsigned int nb_iterations = QInputDialog::getInt(nullptr, "Number of smoothing iterations", "Enter the number of smoothing iterations", 6, 0., 50, 1, &ok);
     
   double stop_ratio = QInputDialog::getDouble(nullptr, "Percentage simplification", "Enter the percentage of edges to remove", 10., 0., 100., 1, &ok);
   stop_ratio /= 100.;
@@ -221,7 +223,6 @@ int main(int argc, char *argv[]) {
         return 1;
       }
       
-      const unsigned int nb_iterations = (argc > 2) ? std::atoi(argv[2]) : 6;
       const double time = (argc > 3) ? std::atof(argv[3]) : 0.05;
     
       std::set<Mesh::Vertex_index> constrained_vertices;
