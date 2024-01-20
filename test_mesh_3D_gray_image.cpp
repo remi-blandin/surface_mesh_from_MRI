@@ -68,6 +68,9 @@ int main(int argc, char* argv[])
   // Output
   std::ofstream medit_file("out.mesh");
   c3t3.output_to_medit(medit_file);
+  
+  std::ofstream surface_mesh_file("out.off");
+  c3t3.output_boundary_to_off(surface_mesh_file, 2);
 
   return 0;
 }
