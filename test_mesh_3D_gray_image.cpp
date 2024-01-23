@@ -14,6 +14,9 @@
 #include <vtkNew.h>
 #include <vtkNIFTIImageReader.h>
 
+// STL includes
+#include <filesystem>
+
 // Domain
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
 typedef CGAL::Labeled_mesh_domain_3<K> Mesh_domain;
@@ -38,12 +41,6 @@ using namespace CGAL::parameters;
 int main(int argc, char* argv[])
 {
   /// [Loads image]
-//  const std::string fname = (argc>1)?argv[1]:CGAL::data_file_path("images/liver.inr.gz");
-//  CGAL::Image_3 image;
-//  if(!image.read(fname)){
-//    std::cerr << "Error: Cannot read file " <<  fname << std::endl;
-//    return EXIT_FAILURE;
-//  }
 	const std::string fname = (argc>1)?argv[1]:CGAL::data_file_path("tense-i.nii.gz");
   vtkNew<vtkNIFTIImageReader> reader;
       reader->SetFileName(fname.c_str()); 
@@ -70,7 +67,26 @@ int main(int argc, char* argv[])
   c3t3.output_to_medit(medit_file);
   
   std::ofstream surface_mesh_file("out.off");
-  c3t3.output_boundary_to_off(surface_mesh_file, 2);
+  std::string dir_output_surfaces("output_surfaces");
+  
+  // check if the output surface directory exists, and create it if necessary
+  if (!std::filesystem::is_directory(dir_output_surfaces)) 
+  {
+    std::filesystem::create_directory(dir_output_surfaces);
+  }
+  
+  std::string file_name;
+  
+  // extract all the surfaces
+  for (int i(0); i < 20; i++)
+  {
+		file_name = dir_output_surfaces + "/" + "out_" + std::to_string(i) + ".off";
+		cout << file_name << endl;
+		surface_mesh_file.open(file_name);
+	  c3t3.output_boundary_to_off(surface_mesh_file, i);
+	  surface_mesh_file.close();
+  }
+
 
   return 0;
 }
