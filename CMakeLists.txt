@@ -38,6 +38,8 @@ endif ()
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 find_package(CGAL REQUIRED COMPONENTS ImageIO)
+find_package(ITK QUIET COMPONENTS ITKCommon ITKThresholding ITKSmoothing ITKImageIntensity)
+include(CGAL_ITK_support)
 
 # include for local package
 find_package(Eigen3 3.2.0) #(requires 3.2.0 or greater)
@@ -57,4 +59,5 @@ target_link_libraries(test_mesh_3D_gray_image
 	Qt5::Widgets
 	CGAL::CGAL
 	CGAL::Eigen3_support
+	CGAL::ITK_support
 	)
