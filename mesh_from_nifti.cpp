@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
   //*********************************************
   
   // create the file dialog
-  QString fileName = QFileDialog::getOpenFileName(nullptr, "Open File", "/home/remi/Bureau/PromiseAI/mri_data/mesh_generated_with_CGAL/", "All Files (*.*)");
+  QString fileName = QFileDialog::getOpenFileName(nullptr, "Open File", "All Files (*.*)");
   
   std::ifstream inputFile(fileName.toStdString());
   std::string line, item;
@@ -129,12 +129,6 @@ int main(int argc, char *argv[]) {
   // Prompt the user for a number using QInputDialog and get the result
   bool ok;
   double max_dim = QInputDialog::getDouble(nullptr, "Maximal dimension", "Enter mesh maximal dimension (mm)", 1., 0., 100., 1, &ok);
-    
-//      double center_x = QInputDialog::getDouble(nullptr, "Center X", "Enter x coordinate of the center (mm)", double(image.xdim()) / 2., -1000., 1000., 1, &ok);
-//      
-//      double center_y = QInputDialog::getDouble(nullptr, "Center Y", "Enter y coordinate of the center (mm)", double(image.ydim()) / 2., -1000., 1000., 1, &ok);
-//      
-//      double center_z = QInputDialog::getDouble(nullptr, "Center Z", "Enter z coordinate of the center (mm)", double(image.zdim()) / 2., -1000., 1000., 1, &ok);
 
 	unsigned int nb_iterations = QInputDialog::getInt(nullptr, "Number of smoothing iterations", "Enter the number of smoothing iterations", 6, 0., 50, 1, &ok);
     
