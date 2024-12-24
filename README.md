@@ -6,9 +6,9 @@ This program generates a 3D surface mesh from a segmentation mask provided in th
 
 The libraries VTK, QT5 and CGAL and Eigen 3 must be installed to compile this program.
 
-Once dependencies are installed, simply execute in the directory of the repository:
-`cmake .`
-`make
+Once dependencies are installed, simply execute in the directory of the repository:  
+`cmake .`  
+`make` 
   
 ## For windows and MacOs:
 
@@ -22,8 +22,8 @@ It is a 4 columns `csv`file constaining the paths to the nifti files to process 
 in pixel unit of a point situated in the vicinity of the area to be converted to a surface mesh.
 It is organized as follows:
 
-[path to nifti file 1];[x coordinate];[y coordinate];[z coordinate]
-[path to nifti file 2];[x coordinate];[y coordinate];[z coordinate]
+[path to nifti file 1];[x coordinate];[y coordinate];[z coordinate]  
+[path to nifti file 2];[x coordinate];[y coordinate];[z coordinate]  
 ...`
 
 After that:
