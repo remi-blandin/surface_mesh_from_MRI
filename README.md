@@ -1,6 +1,6 @@
 This program generates a 3D surface mesh from a segmentation mask provided in the nifti format.
 
-Compilation for Linux:
+<h1>Compilation for Linux:</h1>
 
 The libraries VTK, QT5 and CGAL and Eigen 3 must be installed to compile this program.
 
