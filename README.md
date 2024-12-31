@@ -32,4 +32,8 @@ Subsequently, the program will prompt for the following inputs:
 - The number of smoothing iterations.
 - The percentage of edges to retain during the simplification process.
 
-Once these parameters are provided, the mesh extraction is performed, and the resulting meshes are saved in an "STL" folder within the same directory as the NIfTI files.
+Once these parameters are provided, the mesh extraction is performed, and the resulting meshes are saved in an "STL_files" folder within the same directory as the NIfTI files.
+
+# Example
+
+The example is generated from data provided in https://github.com/neurolabusc/niivue-images
