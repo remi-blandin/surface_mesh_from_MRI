@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
   //*********************************************
   
   // create the file dialog
-  QString fileName = QFileDialog::getOpenFileName(nullptr, "Open File", "All Files (*.*)");
+  QString fileName = QFileDialog::getOpenFileName(nullptr, "Open file list", "Csv file (*.csv*)");
   
   std::ifstream inputFile(fileName.toStdString());
   std::string line, item;
