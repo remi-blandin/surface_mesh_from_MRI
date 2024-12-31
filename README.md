@@ -1,4 +1,6 @@
-This program generates a 3D surface mesh from a segmentation mask provided in the nifti format.
+# About
+
+This program creates a 3D surface mesh from a segmentation mask provided in NIfTI format.
 
 # Compilation
 
@@ -12,23 +14,22 @@ Once dependencies are installed, simply execute in the directory of the reposito
   
 ## For windows and MacOs:
 
-No compilation was tested with these platforms, however, the compilation should be possible using cmake.
+Compilation on these platforms has not been tested, but it should be achievable using CMake.
 
 # Usage
 
-When runing the binary "mesh_from_nifti", a prompt requires to provide a file.
-This file must be generated according to the data which are processed.
-It is a 4 columns `csv`file constaining the paths to the nifti files to process followed by the coordinates
-in pixel unit of a point situated in the vicinity of the area to be converted to a surface mesh.
-It is organized as follows:
+When executing the "mesh_from_nifti" binary, a prompt will request a CSV file containing a list of files to process along with configuration parameters for mesh extraction. An example file is provided as "example.csv".
 
-[path to nifti file 1];[x coordinate];[y coordinate];[z coordinate]  
+The file is a 4-column CSV containing the paths to the NIfTI files to be processed, followed by the pixel coordinates of a point near the center of the region to be converted into a surface mesh. The structure is as follows:
+
+'[path to nifti file 1];[x coordinate];[y coordinate];[z coordinate]  
 [path to nifti file 2];[x coordinate];[y coordinate];[z coordinate]  
 ...`
 
-After that:
-- the desired edge size is asked in mm,
-- the number of smoothing iterations is asked,
-- the percentage of edges to keep in the simplification process is asked
+Subsequently, the program will prompt for the following inputs:
 
-Finally the mesh extraction is done and the resulting meshes are saved in a folder named STL in the same directory aas the nifti files.
+- The desired edge size in millimeters (mm).
+- The number of smoothing iterations.
+- The percentage of edges to retain during the simplification process.
+
+Once these parameters are provided, the mesh extraction is performed, and the resulting meshes are saved in an "STL" folder within the same directory as the NIfTI files.
