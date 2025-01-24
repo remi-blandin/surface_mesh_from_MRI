@@ -6,11 +6,13 @@ This program creates a 3D surface mesh from a segmentation mask provided in NIfT
 
 ## For Linux:
 
-The libraries VTK, QT5 and CGAL and Eigen 3 must be installed to compile this program.
+The libraries VTK, QT5 and CGAL and Eigen3 must be installed to compile this program.
 
 Once dependencies are installed, simply execute in the directory of the repository:  
 `cmake .`  
 `make` 
+
+This was tested with VTK 9, QT5 5.15.3, CGAL 5.4.1 and Eigen3 3.4.0 on Ubuntu 22.04.5 LTS.
   
 ## For windows and MacOs:
 
